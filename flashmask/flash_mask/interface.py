@@ -192,12 +192,19 @@ def flashmask_attention(
     softmax_scale: float | None = None,
     block_mask: paddle.Tensor | None = None,
     use_varlen: bool = False,
+    sink: paddle.Tensor | None = None,
+
 ):
     if use_varlen:
         assert (
             paddle.base.framework.get_flags(["FLAGS_flash_attn_version"])["FLAGS_flash_attn_version"] == 4
         ), (
             "use_varlen only support fa4"
+        )
+        assert (
+            not paddle.get_flags(["FLAGS_cudnn_deterministic"])["FLAGS_cudnn_deterministic"]
+        ), (
+            "use_varlen does not support deterministic"
         )
         assert dropout == 0, (
             "use_varlen does not support dropout"
@@ -269,4 +276,5 @@ def flashmask_attention(
             name=name,
             softmax_scale=softmax_scale,
             block_mask=block_mask,
+            learnable_sink=sink,
         )
